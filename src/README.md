@@ -1,6 +1,6 @@
 # HW6 – Interactive Basketball Shooting Game with Physics
 
-**Authors:** Joel Elias & Neta Nakdimon  
+**Authors:** Joel Elias (ID: 313914699) & Neta Nakdimon (ID: 322216128)  
 **Course:** Computer Graphics - Spring Semester 2025
 
 ---
@@ -15,6 +15,9 @@
 
 ### Camera Control
 ![Camera Control](../media/Camara.gif)
+
+### Scoring a Basket
+![Scoring](../media/Scooring.gif)
 
 ---
 
@@ -87,9 +90,13 @@ This project is a fully interactive, physics-based basketball shooting game buil
 - See the GIFs above for demonstration
 
 ## Authors
-Joel Elias & Neta Nakdimon
+Joel Elias (ID: 313914699) & Neta Nakdimon (ID: 322216128)
 
 ---
 
 **Assignment:** HW6 - Interactive Basketball Shooting Game with Physics  
-**Due Date:** July 6, 2025, 23:59
+**Due Date:** July 27, 2025, 23:59
+
+---
+
+**Group 3 "Miluim"**

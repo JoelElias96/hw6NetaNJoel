@@ -95,4 +95,8 @@ Joel Elias (ID: 313914699) & Neta Nakdimon (ID: 322216128)
 ---
 
 **Assignment:** HW6 - Interactive Basketball Shooting Game with Physics  
-**Due Date:** July 6, 2025, 23:59
+**Due Date:** July 27, 2025, 23:59
+
+---
+
+**Group 3 "Miluim"**
