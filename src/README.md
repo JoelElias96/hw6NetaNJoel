@@ -93,7 +93,7 @@ This project is a fully interactive, physics-based basketball shooting game buil
 - See the GIFs above for demonstration
 
 ## Authors
-Joel Elias (ID: 313914699) & Neta Nakdimon (ID: 322216128)
+Joel Elias (ID: 313914699) & Neta Nakdimon (ID: 322216128) - **Group 3 "Miluim"**
 
 ---
 
