@@ -1,16 +1,12 @@
 {
-  "name": "cg_ex5",
+  "name": "hw6-basketball-game",
   "version": "1.0.0",
-  "description": "exercise 5 in Computer Graphics course",
-  "main": "index.js",
+  "description": "HW6 - Interactive Basketball Shooting Game with Physics",
+  "main": "index.html",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Dan Pollak",
-  "type": "module",
+  "author": "Joel Elias & Neta Nakdimon",
   "license": "MIT",
-  "dependencies": {
-    "express": "^4.21.2"
-  }
+  "dependencies": {}
 }

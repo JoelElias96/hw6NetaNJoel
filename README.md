@@ -70,9 +70,12 @@ This project is a fully interactive, physics-based basketball shooting game buil
 - **Magnetic guidance:** Subtle, helps ball find the basket
 
 ## How to Run
-1. `npm install`
-2. `npm start`
-3. Open [http://localhost:8000](http://localhost:8000)
+1. **Clone or download** this repository
+2. **Open the project** in your code editor
+3. **Open `index.html`** in your web browser
+   - You can double-click the file or drag it into your browser
+   - Or use a local server like Live Server (VS Code extension)
+4. **Start playing!** Use the controls below to move and shoot the basketball
 
 ## Controls Reference
 | Key         | Action                        |
