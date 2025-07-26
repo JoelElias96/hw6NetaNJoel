@@ -2,7 +2,7 @@
 <html>
 	<head>
 		<meta charset="utf-8">
-		<title>HW5 - Interactive Basketball Court</title>
+		<title>HW6 - Interactive Basketball Shooting Game</title>
 		<style>
 			body { 
 				margin: 0; 
@@ -10,7 +10,7 @@
 				overflow: hidden;
 			}
 			
-			/* UI Framework for future interactive elements */
+			/* UI Framework for interactive elements */
 			#ui-container {
 				position: absolute;
 				top: 0;
@@ -26,12 +26,14 @@
 				top: 20px;
 				left: 20px;
 				color: white;
-				font-size: 24px;
+				font-size: 20px;
 				font-weight: bold;
-				background: rgba(0, 0, 0, 0.7);
-				padding: 15px;
+				background: rgba(0, 0, 0, 0.8);
+				padding: 20px;
 				border-radius: 10px;
 				pointer-events: auto;
+				border: 2px solid #4ade80;
+				min-width: 200px;
 			}
 			
 			#controls-display {
@@ -40,10 +42,12 @@
 				left: 20px;
 				color: white;
 				font-size: 16px;
-				background: rgba(0, 0, 0, 0.7);
-				padding: 15px;
+				background: rgba(0, 0, 0, 0.8);
+				padding: 20px;
 				border-radius: 10px;
 				pointer-events: auto;
+				border: 2px solid #3b82f6;
+				min-width: 300px;
 			}
 			
 			#game-info {
@@ -51,33 +55,62 @@
 				top: 20px;
 				right: 20px;
 				color: white;
-				font-size: 16px;
-				background: rgba(0, 0, 0, 0.7);
-				padding: 15px;
+				font-size: 18px;
+				background: rgba(0, 0, 0, 0.8);
+				padding: 20px;
 				border-radius: 10px;
 				pointer-events: auto;
+				border: 2px solid #f59e0b;
+				text-align: center;
 			}
 			
+			#score-display div {
+				margin: 5px 0;
+			}
+			
+			#controls-display p {
+				margin: 8px 0;
+			}
+			
+			#controls-display h3 {
+				margin-top: 0;
+				color: #3b82f6;
+			}
 
 		</style>
 		<script src='https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js'></script>
 	</head>
 	<body>
-		<!-- UI Framework for future interactive elements -->
+		<!-- Enhanced UI for HW6 interactive game -->
 		<div id="ui-container">
+			<div id="score-display">
+				<div><strong>SCORE: 0</strong></div>
+				<div>Shots Made: 0/0</div>
+				<div>Accuracy: 0%</div>
+				<div>Shot Power: 50%</div>
+			</div>
+			
 			<div id="game-info">
-				<div><strong>HW05 + Stadium Bonus</strong></div>
-				<div>Basketball Arena</div>
+				<div><strong>HW6 - Interactive Basketball</strong></div>
+				<div><strong>Joel Elias & Neta Nakdimon</strong></div>
+				<div>Basketball Shooting Game</div>
+				<div style="margin-top: 10px; font-size: 14px;">
+					<em>Physics-Based Gameplay</em>
+				</div>
 			</div>
 			
 			<div id="controls-display">
 				<h3>Controls:</h3>
+				<p><strong>Arrow Keys</strong> - Move basketball</p>
+				<p><strong>W/S</strong> - Adjust shot power (50%)</p>
+				<p><strong>Spacebar</strong> - Shoot basketball</p>
+				<p><strong>R</strong> - Reset ball position</p>
 				<p><strong>O</strong> - Toggle orbit camera</p>
-
-				<p><em>Stadium environment with bleachers!</em></p>
+				<br>
+				<p><em>Interactive Basketball Shooting Game!</em></p>
 			</div>
 		</div>
 		
-		<script src="src/hw5.js" type="module"></script>
+		<script src="src/hw6.js" type="module"></script>
 	</body>
 </html>
