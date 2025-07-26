@@ -56,7 +56,7 @@ const BALL_START_HEIGHT = 6.0; // Start ball higher for better basketball feel
 const MOVEMENT_SPEED = 0.2; // Slower movement for better control
 const ROTATION_DAMPING = 0.95;
 const MAX_BOUNCE_COUNT = 6;
-const VISUAL_SPEED_SCALE = 0.3; // Scale all physics for slower, more visual gameplay
+const VISUAL_SPEED_SCALE = 0.25; // Balanced for visual tracking and reaching target
 
 // Court boundaries
 const COURT_BOUNDS = {
@@ -293,13 +293,14 @@ function updatePhysics(deltaTime) {
   const scaledVelocity = basketballVelocity.clone().multiplyScalar(deltaTime * VISUAL_SPEED_SCALE);
   basketball.position.add(scaledVelocity);
   
-  // Check hoop collisions for visual scoring (highest priority)
-  checkHoopCollision();
-  
-  // Gentle backboard collisions that don't interfere with scoring
+  // Check realistic collisions first (rim and backboard bounce UP)
   if (!ballHasPassedThroughHoop) {
-    checkBackboardCollision();
+    checkRimCollision(); // Ball bounces UP off rim
+    checkBackboardCollision(); // Ball bounces UP off backboard
   }
+  
+  // Check hoop scoring (ball passes through and falls down)
+  checkHoopCollision();
   
   // Ground collision with realistic bouncing
   if (basketball.position.y <= GROUND_Y) {
@@ -329,7 +330,7 @@ function updatePhysics(deltaTime) {
   updateBasketballRotation(deltaTime);
 }
 
-// REALISTIC Backboard collision - helps shots bank in
+// REALISTIC Backboard collision - Ball bounces UP and forward
 function checkBackboardCollision() {
   if (!basketball || !isPhysicsActive || ballHasPassedThroughHoop) return;
   
@@ -342,34 +343,35 @@ function checkBackboardCollision() {
     const ballY = basketball.position.y;
     const ballZ = basketball.position.z;
     
-    // Check if ball hits backboard (behind the rim)
-    const isBehindBackboard = (hoop.x > 0 && ballX > backboardX + 0.3) || (hoop.x < 0 && ballX < backboardX - 0.3);
+    // Check if ball hits backboard
+    const isBehindBackboard = (hoop.x > 0 && ballX > backboardX + 0.2) || (hoop.x < 0 && ballX < backboardX - 0.2);
     const isAtBackboardHeight = ballY > backboardY - 2 && ballY < backboardY + 2;
-    const isAtBackboardWidth = Math.abs(ballZ - backboardZ) < 1.3;
+    const isAtBackboardWidth = Math.abs(ballZ - backboardZ) < 1.4;
     
     if (isBehindBackboard && isAtBackboardHeight && isAtBackboardWidth) {
-      console.log(`Ball bounced off backboard - creating bank shot opportunity`);
+      console.log(`Ball hit backboard! Bouncing UP and forward for bank shot`);
       
-      // Realistic backboard bounce - helps create bank shots
-      basketballVelocity.x *= -0.4; // Gentle reverse
-      basketballVelocity.y *= 0.7;  // Slight downward adjustment
-      basketballVelocity.z *= 0.8;  // Some dampening
+      // REALISTIC BACKBOARD BOUNCE - Ball bounces UP and toward rim
+      basketballVelocity.x *= -0.6; // Reverse direction toward rim
+      basketballVelocity.y = Math.abs(basketballVelocity.y) * 0.5 + 0.2; // Bounce UP
+      basketballVelocity.z *= 0.7;  // Some dampening
       
-      // Move ball slightly away from backboard toward rim
+      // Move ball away from backboard
       const directionToRim = hoop.x > 0 ? -1 : 1;
-      basketball.position.x = backboardX + directionToRim * 1.2;
+      basketball.position.x = backboardX + directionToRim * 1.0;
       
-      bounceCount++; // Count as a bounce
+      bounceCount++;
+      console.log(`Backboard bounce: ball now moving UP with velocity Y = ${basketballVelocity.y.toFixed(2)}`);
     }
   });
 }
 
-// NEW: Rim collision detection - VERY FORGIVING
+// REALISTIC RIM COLLISION - Ball bounces UP like real basketball
 function checkRimCollision() {
-  if (!basketball || !isPhysicsActive) return;
+  if (!basketball || !isPhysicsActive || ballHasPassedThroughHoop) return;
   
   HOOPS.forEach(hoop => {
-    const rimX = hoop.x - 0.6; // Rim is slightly in front of backboard
+    const rimX = hoop.x - 0.6; // Rim center position
     const rimY = hoop.y;
     const rimZ = hoop.z;
     
@@ -377,23 +379,26 @@ function checkRimCollision() {
     const ballY = basketball.position.y;
     const ballZ = basketball.position.z;
     
-    // Check distance to rim
+    // Check distance to rim edge
     const horizontalDistance = Math.sqrt(
       Math.pow(ballX - rimX, 2) + Math.pow(ballZ - rimZ, 2)
     );
     
-    // Much more forgiving rim collision - most shots that hit rim go in
-    if (horizontalDistance > 1.2 && horizontalDistance < 2 && Math.abs(ballY - rimY) < 0.8) {
-      // Instead of harsh bounce, give a gentle redirect toward hoop
-      const bounceDirection = new THREE.Vector3(rimX - ballX, rimY - ballY, rimZ - ballZ);
+    // Ball hits the rim (not going through cleanly)
+    if (horizontalDistance > hoop.rim * 0.9 && horizontalDistance < hoop.rim * 1.8 && Math.abs(ballY - rimY) < 0.6) {
+      console.log(`Ball hit the rim! Bouncing UP like real basketball`);
+      
+      // REALISTIC RIM BOUNCE - Ball bounces UP and away from rim
+      const bounceDirection = new THREE.Vector3(ballX - rimX, 0, ballZ - rimZ);
       bounceDirection.normalize();
       
-      // Gentle redirect toward hoop (helps shots go in)
-      basketballVelocity.x += bounceDirection.x * 0.1;
-      basketballVelocity.z += bounceDirection.z * 0.1;
-      basketballVelocity.y = Math.max(basketballVelocity.y * 0.8, -0.2); // Gentle downward motion
+      // Apply realistic rim bounce - UP and outward
+      basketballVelocity.x = bounceDirection.x * 0.4; // Bounce away horizontally
+      basketballVelocity.z = bounceDirection.z * 0.4; // Bounce away horizontally  
+      basketballVelocity.y = Math.abs(basketballVelocity.y) * 0.6 + 0.3; // Bounce UP (important!)
       
       bounceCount++;
+      console.log(`Rim bounce: ball now moving UP with velocity Y = ${basketballVelocity.y.toFixed(2)}`);
     }
   });
 }
@@ -457,24 +462,34 @@ function checkHoopCollision() {
       basketballVelocity.z += pullDirection.z;
     }
     
-    // VERY GENEROUS SCORING DETECTION - Easy to score!
-    const isPassingThroughHoop = horizontalDistance < hoop.rim * 1.8; // Much larger scoring area!
-    const isAtRimLevel = Math.abs(ballPosition.y - rimPosition.y) < 1.5; // Very generous height
-    const isMovingDownward = basketballVelocity.y < 0.3; // Allow slight upward motion
-    const isComingFromAbove = ballPosition.y >= rimPosition.y - 2.0; // Very lenient
-    
-    // EASY SCORING WITH VISUAL EFFECTS
-    if (isPassingThroughHoop && isAtRimLevel && isMovingDownward && isComingFromAbove && !ballHasPassedThroughHoop) {
-      ballHasPassedThroughHoop = true;
-      console.log(`🎉 BASKET SCORED! Ball entered ${hoop.x > 0 ? 'RIGHT' : 'LEFT'} hoop! Distance: ${horizontalDistance.toFixed(2)}`);
-      
-      // VISUAL SCORING INDICATION - Flash the scene and show message
-      flashBasketEffect();
-      lastShotMessage = "🎉 BASKET! AMAZING SHOT!";
-      showMessageTime = 240; // Show message even longer
-      updateUI();
-      
-             // Score immediately with celebration
+         // DETECT BALL ACTUALLY PASSING THROUGH HOOP
+     const isPassingThroughHoop = horizontalDistance < hoop.rim * 1.3; // Generous but realistic
+     const isAtRimLevel = Math.abs(ballPosition.y - rimPosition.y) < 0.8; // Near rim height
+     const isMovingDownward = basketballVelocity.y < -0.1; // Must be falling down
+     const isComingFromAbove = ballPosition.y >= rimPosition.y - 1.0; // Coming from above
+     
+     // VISUAL SWISH - Ball actually goes through hoop and falls
+     if (isPassingThroughHoop && isAtRimLevel && isMovingDownward && isComingFromAbove && !ballHasPassedThroughHoop) {
+       ballHasPassedThroughHoop = true;
+       console.log(`🏀 SWISH! Ball passing through ${hoop.x > 0 ? 'RIGHT' : 'LEFT'} hoop and falling through net!`);
+       
+       // VISUAL INDICATION - Flash and message
+       flashBasketEffect();
+       lastShotMessage = "🏀 SWISH! Through the Net!";
+       showMessageTime = 240;
+       updateUI();
+       
+       // Let ball continue falling THROUGH the hoop for visual effect
+       // Make sure ball passes through visually by guiding it down
+       basketballVelocity.x *= 0.3; // Slow horizontal movement
+       basketballVelocity.z *= 0.3; // Slow horizontal movement  
+       basketballVelocity.y = -0.6; // Ensure downward motion through net
+       
+       // Position ball right at rim center for clean passage
+       basketball.position.x = rimPosition.x;
+       basketball.position.z = rimPosition.z;
+       
+       // Score after ball falls through visually
        setTimeout(() => {
          if (ballHasPassedThroughHoop) {
            gameStats.score += 2;
@@ -484,22 +499,24 @@ function checkHoopCollision() {
            // Celebration effect
            celebrateBasket();
            
-           // Gentle reset
-           basketballVelocity.set(0, 0, 0);
-           isPhysicsActive = false;
-           basketball.position.set(0, BALL_START_HEIGHT, 0);
-           ballHasPassedThroughHoop = false;
-           
-           lastShotMessage = "🏆 +2 POINTS! INCREDIBLE!";
-           showMessageTime = 180;
+           lastShotMessage = "🏆 +2 POINTS! BEAUTIFUL SWISH!";
+           showMessageTime = 200;
            updateUI();
            
-           console.log(`🎉 SCORE! Total: ${gameStats.score} points (${gameStats.shotsMade}/${gameStats.shotAttempts})`);
+           console.log(`🎉 SCORED! Ball fell through net! Total: ${gameStats.score} points`);
+           
+           // Reset after celebration
+           setTimeout(() => {
+             basketballVelocity.set(0, 0, 0);
+             isPhysicsActive = false;
+             basketball.position.set(0, BALL_START_HEIGHT, 0);
+             ballHasPassedThroughHoop = false;
+           }, 1500); // Extra time to watch ball fall
          }
-       }, 1000); // 1 second delay for visual satisfaction
-      
-      return; // Exit to prevent multiple detections
-    }
+       }, 1000); // Let ball fall through first
+       
+       return; // Exit to prevent multiple detections
+     }
   });
 }
 
@@ -660,26 +677,27 @@ function shootBasketball() {
   console.log(`Aiming at rim (${rimTarget.x.toFixed(1)}, ${rimTarget.y.toFixed(1)}, ${rimTarget.z.toFixed(1)})`);
   console.log(`Distance: ${horizontalDistance.toFixed(1)}, Height diff: ${deltaY.toFixed(1)} (ball needs to go ${deltaY > 0 ? 'UP' : 'DOWN'})`);
   
-  // HIGH ARC TRAJECTORY CALCULATION - More curved shots that reach basket
-  const baseBallTime = 3.5; // Slightly faster for better arc
-  const powerEffect = (shotPower / 100) * 0.4 + 0.6; // 0.6 to 1.0 multiplier for more power
-  const flightTime = baseBallTime / powerEffect; // 3.5 to 5.8 seconds
+  // BALANCED CURVED TRAJECTORY - Perfect middle ground
+  const baseBallTime = 4.2; // Good balance of visual appeal and power
+  const powerEffect = (shotPower / 100) * 0.4 + 0.6; // 0.6 to 1.0 multiplier (moderate)
+  const flightTime = baseBallTime / powerEffect; // 4.2 to 7.0 seconds
   
-  // Add extra arc height for beautiful curved shots
-  const arcBoost = 3.0; // Add 3 units of extra arc height
+  // Add arc height for beautiful curved shots
+  const arcBoost = 4.0; // Good arc height that still allows reaching target
   const adjustedDeltaY = deltaY + arcBoost; // Make ball go higher than target
   
-  // Calculate horizontal velocities 
-  const velocityX = (deltaX / flightTime);
-  const velocityZ = (deltaZ / flightTime);
+  // Calculate velocities with MODERATE boost for reaching basket
+  const powerBoost = 1.2; // Moderate boost - middle ground between weak and too strong
+  const velocityX = (deltaX / flightTime) * powerBoost;
+  const velocityZ = (deltaZ / flightTime) * powerBoost;
   
-  // Calculate vertical velocity with extra arc for curved trajectory
+  // Calculate vertical velocity with moderate boost
   // Using: deltaY = vY*t + 0.5*g*t² -> vY = (deltaY - 0.5*g*t²) / t
-  const velocityY = (adjustedDeltaY - 0.5 * GRAVITY * flightTime * flightTime) / flightTime;
+  const velocityY = ((adjustedDeltaY - 0.5 * GRAVITY * flightTime * flightTime) / flightTime) * powerBoost;
   
-  console.log(`🏀 HIGH ARC SHOT - Flight time: ${flightTime.toFixed(1)}s, Arc boost: +${arcBoost} units`);
+  console.log(`🏀 BALANCED ARC SHOT - Flight time: ${flightTime.toFixed(1)}s, Arc boost: +${arcBoost} units, Power boost: ${powerBoost}x`);
   console.log(`Ball will arc beautifully from (${ballPos.x.toFixed(1)}, ${ballPos.y.toFixed(1)}) to (${rimTarget.x.toFixed(1)}, ${rimTarget.y.toFixed(1)})`);
-  console.log(`Curved velocities: vX=${velocityX.toFixed(2)}, vY=${velocityY.toFixed(2)}, vZ=${velocityZ.toFixed(2)}`);
+  console.log(`BALANCED velocities: vX=${velocityX.toFixed(2)}, vY=${velocityY.toFixed(2)}, vZ=${velocityZ.toFixed(2)}`);
   
   // Set the calculated slow velocities
   basketballVelocity.x = velocityX;
@@ -691,8 +709,8 @@ function shootBasketball() {
   bounceCount = 0;
   ballHasPassedThroughHoop = false; // Reset swish detection
   
-  console.log(`🏀 HIGH ARC SHOT FIRED! Ball will curve beautifully to rim in ${flightTime.toFixed(1)} seconds`);
-  console.log(`Watch the ball's high, curved trajectory with extra arc!`);
+  console.log(`🏀 PERFECTLY BALANCED SHOT FIRED! Ball will reach rim in ${flightTime.toFixed(1)} seconds with ${powerBoost}x power!`);
+  console.log(`Watch the ball's beautiful curved trajectory - perfectly balanced power!`);
   
   updateUI();
 }
